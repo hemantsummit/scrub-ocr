@@ -3,7 +3,7 @@ from fastapi import FastAPI, File, UploadFile
 from typing import List
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from script import get_ocr_result, converB64tofile, get_scrub_data
+from script import get_ocr_result, converB64tofile, get_scrub_data, get_table
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
@@ -52,3 +52,7 @@ async def index(image_request: ImageRequest):
     # print(data)
     # data = "OK"
     return data
+
+@app.get("/table")
+async def index():
+    return JSONResponse(content =get_table())
