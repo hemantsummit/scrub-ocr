@@ -59,54 +59,119 @@ def get_scrub_data(image):
 
   return final_result
 
-def get_table():
-  table_engine = PPStructure(layout=False,lang='en',show_log=True)
+def get_table(image, scale):
+  table_engine = PPStructure(show_log=True, image_orientation=True, lang='en')
 
-  save_folder = './output'
-  img_path = 'table4.png'
-  img = cv2.imread(img_path)
+  # save_folder = './output'
+  # img_path = 'tax_1.jpg'
+  img = cv2.imread(image)
   result = table_engine(img)
-  save_structure_res(result, save_folder,os.path.basename(img_path).split('.')[0])
+  # print(result)
+  # save_structure_res(result, save_folder,os.path.basename(img_path).split('.')[0])
 
-  img = []
-  for line in result:
-      img = line.pop('img')
 
-  
-  print(len(result[0]["res"]["cell_bbox"]))
-  soup = BeautifulSoup(result[0]["res"]["html"], 'html.parser')
-
-  table = soup.find('table')
-  rows = table.find_all('tr')
-
-  bbox = result[0]["res"]["cell_bbox"]
-
-  for x in bbox:
-     x[2] -= x[0]
-     x[3] -= x[1]
-  
   data = []
-  for i in range(len(rows)):
-      row = rows[i]
-      cols = row.find_all('td')
-      cols = { "key_type": "", "description": cols[0].text.strip(), "value": cols[1].text.strip(), "bboxKey": bbox[2*i], "bboxValue": bbox[2*i + 1]}
-      data.append(cols)
+
+
+  # print('-----------------------------------', result, '--------------------------------------------')
+
+  for value in result:
+     if (value['type'] == 'table'):
+      
+      # img = []
+      # for line in value:
+      #     img = line.pop('img')
+
+      
+      
+      soup = BeautifulSoup(value["res"]["html"], 'html.parser')
+
+      table = soup.find('table')
+      # print(table)
+      rows = table.find_all('tr')
+      print(rows)
+      # print(rows)
+      bbox = value["res"]["cell_bbox"]
+
+      for x in bbox:
+        x[2] -= x[0]
+        x[3] -= x[1]
+      # print('------------------------------')
+      
+      index = 0
+      for i in range(len(rows)):
+          row = rows[i]
+          cols = row.find_all('td')
+          # if (len(cols) >= 2):
+          #   cols = { "key_type": "", "description": cols[0].text.strip(), "value": cols[1].text.strip()}
+
+          column = { "key_type": "", "description": "", "value": "", "bboxKey": "", "bboxValue": ""}
+          flag = True
+
+          if (len(cols) == 2):
+            flag = True
+          else:
+            flag = False
+
+          cnt = 0;
+          for x in cols: 
+            if (cnt == 0 and flag):
+              column["description"] = x.text.strip()
+              column["bboxKey"] = bbox[index]
+              column["bboxKey"][1]+=value['bbox'][1]
+              column["bboxKey"][0]+=value['bbox'][0]
+              column["bboxKey"].append(scale)
+              cnt+=1
+              index += 1
+            elif (cnt == 1 and flag): 
+              column["value"] = x.text.strip()
+              column["bboxValue"] = bbox[index]
+              column["bboxValue"][0]+=value['bbox'][0]
+              column["bboxValue"][1]+=value['bbox'][1]
+              column["bboxValue"].append(scale)
+              cnt+=1
+              index += 1
+            else:
+              cnt+=1
+              index += 1
+            
+          if (len(column["description"]) > 0 and len(column["value"])):
+            data.append(column)
+
+          # try:
+          #   cols = { "key_type": "", "description": cols[0].text.strip(), "value": cols[1].text.strip(), "bboxKey": bbox[2*i], "bboxValue": bbox[2*i+1]}
+          #   cols["bboxKey"][0]+=value['bbox'][0]
+          #   cols["bboxKey"][1]+=value['bbox'][1]
+          #   cols["bboxValue"][0]+=value['bbox'][0]
+          #   cols["bboxValue"][1]+=value['bbox'][1]
+          #   cols["bboxKey"].append(scale)
+          #   cols["bboxValue"].append(scale)
+
+          #   data.append(cols)
+          # except:
+          #   pass
+
+          # for j in cols:
+          #   index += 1
+      # print('------------------------------')
 
   # print(len(data))
 
-  # for x in data:
-  #   xmin = math.ceil(x["bboxKey"][0])
-  #   xmax = math.ceil(xmin + x["bboxKey"][2])
-  #   ymin = math.ceil(x["bboxKey"][1])
-  #   ymax = math.ceil(ymin + x["bboxKey"][3])
-  #   cv2.rectangle(img, (xmin, ymin), (xmax, ymax), (0, 0, 255), 2)
-  #   cv2.putText(img, x["description"] , (xmin, ymin),cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+#   for x in data:
+#     xmin = math.ceil(x["bboxKey"][0])
+#     xmax = math.ceil(xmin + x["bboxKey"][2])
+#     ymin = math.ceil(x["bboxKey"][1])
+#     ymax = math.ceil(ymin + x["bboxKey"][3])
+#     cv2.rectangle(img, (xmin, ymin), (xmax, ymax), (0, 0, 255), 2)
+#     cv2.putText(img, x["description"] , (xmin, ymin),cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-# Draw the rectangle on the image
+# # # Draw the rectangle on the image
 
-  # Display the image with the rectangle
-  # cv2.imshow('image', img)
-  # cv2.waitKey(0)
-  # cv2.destroyAllWindows()
+#   # Display the image with the rectangle
+#   cv2.imshow('image', img)
+#   cv2.waitKey(0)
+#   cv2.destroyAllWindows()
   
   return data
+
+

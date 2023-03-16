@@ -37,22 +37,29 @@ def index():
 
 class ImageRequest(BaseModel):
     image_base64: str
-    
 
-@app.post("/scrub_ocr")
+class TableRequest(BaseModel):
+    image_base64: str
+    scale: int
+
+@app.post("/snip_ocr")
 async def index(image_request: ImageRequest):
     # print(image_request.image_base64)
     # print(type(fileObject))
 
     # print(fileObject)
     fileObject = converB64tofile(image_request.image_base64)
-    print(fileObject)
+    # print(fileObject)
     # print(type(fileObject))
     data = get_scrub_data(fileObject)
     # print(data)
     # data = "OK"
     return data
 
-@app.get("/table")
-async def index():
-    return JSONResponse(content =get_table())
+@app.post("/table_ocr")
+async def index(table_request: TableRequest):
+
+    # print(image_request.image_base64)
+    fileObject = converB64tofile(table_request.image_base64)
+    data = get_table(fileObject, table_request.scale)
+    return data
