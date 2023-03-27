@@ -1,7 +1,14 @@
+paddlepaddle
+paddleocr
+paddlenlp
+paddleclas
 fastapi
 uvicorn[standard]
 gitpython
 matplotlib>=3.2.2
+onnx==1.12.0
+protobuf<=3.20.0
+onnxruntime
 numpy>=1.18.5
 opencv-python>=4.1.1
 Pillow>=7.1.2
@@ -9,8 +16,4 @@ psutil  # system resources
 PyYAML>=5.3.1
 requests>=2.23.0
 tqdm>=4.64.0
-onnx==1.12.0
-protobuf<=3.20.0
-paddlepaddle
-paddleocr
-opencv-python
+python-multipart

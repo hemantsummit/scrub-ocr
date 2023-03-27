@@ -10,19 +10,12 @@ import numpy as np
 import io
 import base64
 from PIL import Image
-origins = [
-    "http://localhost",
-    "http://localhost:3000",
-    "*"
-]
-
-
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,22 +37,27 @@ class TableRequest(BaseModel):
 
 @app.post("/snip_ocr")
 async def index(image_request: ImageRequest):
-    # print(image_request.image_base64)
-    # print(type(fileObject))
 
-    # print(fileObject)
     fileObject = converB64tofile(image_request.image_base64)
-    # print(fileObject)
-    # print(type(fileObject))
     data = get_scrub_data(fileObject)
-    # print(data)
-    # data = "OK"
     return data
 
 @app.post("/table_ocr")
 async def index(table_request: TableRequest):
 
-    # print(image_request.image_base64)
     fileObject = converB64tofile(table_request.image_base64)
     data = get_table(fileObject, table_request.scale)
     return data
+
+@app.post("/page_xtract")
+async def index(image_request: ImageRequest):
+    fileObject = converB64tofile(image_request.image_base64)
+    return {"result":"success"}
+
+@app.post("/pdf_xtract")
+async def index(pdf_file: UploadFile = File(...)):
+    pdf_bytes = await pdf_file.read()
+    pdf_io = io.BytesIO(pdf_bytes)
+
+    return {"result":"success"}
+    
